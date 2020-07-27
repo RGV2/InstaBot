@@ -46,7 +46,7 @@ class InstagramBot:
     def like_comment(self, hashtag):
 
         hrefs_in_view = None
-        with open('./instaRes/comments.txt', 'r') as comments_f:
+        with open('./instaRes/comments.txt', mode='r', encoding='utf8') as comments_f:
             comments = comments_f.read().splitlines()
         driver = self.driver
         driver.get("https://www.instagram.com/explore/tags/" + hashtag + "/")
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     ig.login()
 
     while True:
-        with open('./instaRes/hashtags.txt', 'r') as hashtag_f:
+        with open('./instaRes/hashtags.txt', mode='r', encoding='utf8') as hashtag_f:
             hashtags = hashtag_f.read().splitlines()
 
         try:
