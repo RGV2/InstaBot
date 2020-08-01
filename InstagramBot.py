@@ -75,12 +75,12 @@ class InstagramBot:
             try:
 
                 sleep(random.randint(2, 4))
-                check_like = driver.find_element_by_xpath("//button[normalize-space(@class)='wpO6b']/div["
-                                                          "normalize-space(@class)='QBdPU']/*[name()='svg']")
+                check_like = driver.find_element_by_xpath("//button[normalize-space(@class)='wpO6b']/"
+                                                          "div[normalize-space(@class)='QBdPU']/span/*[name()='svg']")
 
                 if check_like.get_attribute('aria-label') == 'Like':
-                    driver.find_element_by_xpath('//*[@id="react-root"]/section/main/div/div[1]/article/div['
-                                                 '3]/section[1]/span[1]/button').click()
+                    driver.find_element_by_xpath('//*[@id="react-root"]/section/main/'
+                                                 'div/div[1]/article/div/div[3]/section[1]/span[1]/button').click()
                     InstagramBot.likes += 1
 
                     # Commenting on Photo
