@@ -80,7 +80,7 @@ class InstagramBot:
 
                 if check_like.get_attribute('aria-label') == 'Like':
                     driver.find_element_by_xpath('//*[@id="react-root"]/section/main/'
-                                                 'div/div[1]/article/div/div[3]/section[1]/span[1]/button').click()
+                                                 'div/div[1]/article/div[3]/section[1]/span[1]/button').click()
                     InstagramBot.likes += 1
 
                     # Commenting on Photo
