@@ -5,6 +5,7 @@ from time import sleep
 
 import random
 import sys
+import json
 
 
 def print_same_line(text):
@@ -43,13 +44,27 @@ class InstagramBot:
         sleep(5)
         return
 
-    def like_comment(self, hashtag):
-
-        hrefs_in_view = None
-        with open('./instaRes/comments.txt', mode='r', encoding='utf8') as comments_f:
-            comments = comments_f.read().splitlines()
+    # Method for hitting like begins
+    def hit_like(self):
+        hrefs_in_view = ''
         driver = self.driver
-        driver.get("https://www.instagram.com/explore/tags/" + hashtag + "/")
+        hashtag = None
+
+        with open('./instaRes/config.json', mode='r') as hash_config:
+            hash_config = json.load(hash_config)
+            hashtag_status = hash_config['hashtag']
+
+            if hashtag_status.lower() != 'true':
+                hashtag_status = 'false'
+                # print('Setting hashtag status to FALSE...')
+
+        if hashtag_status.lower() == 'true':
+            with open('./instaRes/hashtags.txt', mode='r', encoding='utf8') as hashtags_f:
+                hashtags = hashtags_f.read().splitlines()
+            hashtag = random.choice(hashtags)
+            driver.get('https://www.instagram.com/explore/tags/' + hashtag + '/')
+        else:
+            driver.get('https://www.instagram.com/explore/')
 
         try:
             sleep(random.randint(5, 7))
@@ -58,11 +73,8 @@ class InstagramBot:
                              for elem in hrefs_in_view
                              if '/p/' in elem.get_attribute('href')]
 
-            # Removing the top 9 posts.
-            hrefs_in_view = hrefs_in_view[9:]
-
-        except Exception as e:
-            print(e)
+        except Exception as ex_fetch_url:
+            print(ex_fetch_url)
 
         # Liking photos
         total_photos = len(hrefs_in_view)
@@ -77,50 +89,78 @@ class InstagramBot:
                 sleep(random.randint(2, 4))
                 check_like = driver.find_element_by_xpath("//button[normalize-space(@class)='wpO6b']/"
                                                           "div[normalize-space(@class)='QBdPU']/span/*[name()='svg']")
-
                 if check_like.get_attribute('aria-label') == 'Like':
                     driver.find_element_by_xpath('//*[@id="react-root"]/section/main/'
                                                  'div/div[1]/article/div[3]/section[1]/span[1]/button').click()
-                    InstagramBot.likes += 1
+
+                    self.likes += 1
 
                     # Commenting on Photo
-                    if InstagramBot.likes % 3 == 0 or InstagramBot.likes % 4 == 0:
-                        driver.find_element_by_class_name('Ypffh').click()
-                        comment_element = driver.find_element_by_class_name('Ypffh')
-                        sleep(1)
-                        comment_element.clear()
-                        type_phrase(random.choice(comments), comment_element)
-                        sleep(3)
-                        driver.find_element_by_xpath('//button[contains(text(), "Post")]').click()
-                        sleep(5)
+                    if self.likes % 3 == 0 or self.likes % 4 == 0:
+                        self.post_comment()
+
+                else:
+                    total_photos -= 1
+                    continue
 
                 total_photos -= 1
                 for second in reversed(range(0, random.randint(20, 30))):
-                    print_same_line("#" + hashtag + ': Photos left: ' + str(total_photos) + " | Total Likes: " + str(
-                        InstagramBot.likes) + " | Sleeping " + str(second))
+                    if hashtag is None:
+                        hashtag = ' '
+                    print_same_line("#" + hashtag + ': Photos left: ' + str(total_photos) + " | Total Likes: " +
+                                    str(self.likes) + " | Sleeping " + str(second))
                     sleep(1)
 
-            except Exception:
+            except Exception as ex_like:
+                print(ex_like)
                 sleep(2)
+
+    # Method for hitting like end
+
+    # Method for posting comments begin
+    def post_comment(self):
+        driver = self.driver
+        with open('./instaRes/config.json', mode='r') as cmnt_config:
+            cmnt_config = json.load(cmnt_config)
+            comment_status = cmnt_config['comment']
+            if comment_status.lower() != 'true':
+                comment_status = 'false'
+                # print('Setting hashtag status to FALSE...')
+
+        if comment_status.lower() == 'true':
+            with open('./instaRes/comments.txt', mode='r', encoding='utf8') as comments_f:
+                comments = comments_f.read().splitlines()
+            driver.find_element_by_class_name('Ypffh').click()
+            comment_element = driver.find_element_by_class_name('Ypffh')
+            sleep(1)
+            comment_element.clear()
+            type_phrase(random.choice(comments), comment_element)
+            sleep(3)
+            driver.find_element_by_xpath('//button[contains(text(), "Post")]').click()
+            sleep(5)
+
+        return
+    # Method for posting comments end
 
 
 if __name__ == "__main__":
 
-    username = "mushtaq.ashhar"
-    password = "**************"
+    with open('./instaRes/config.json', mode='r') as config:
+        config = json.load(config)
+        username = config['username']
+        password = config['password']
 
-    ig = InstagramBot(username, password)
-    ig.login()
+        if username == '' or password == '':
+            sys.exit('Invalid username or password entered. Please try again... :)')
+        else:
+            ig = InstagramBot(username, password)
+            ig.login()
 
     while True:
-        with open('./instaRes/hashtags.txt', mode='r', encoding='utf8') as hashtag_f:
-            hashtags = hashtag_f.read().splitlines()
-
         try:
-            tag = random.choice(hashtags)
-            ig.like_comment(tag)
-
-        except Exception:
+            ig.hit_like()
+        except Exception as ex_main:
+            print(ex_main)
             ig.close_browser()
             sleep(60)
             ig = InstagramBot(username, password)
