@@ -56,7 +56,6 @@ class InstagramBot:
 
             if hashtag_status.lower() != 'true':
                 hashtag_status = 'false'
-                # print('Setting hashtag status to FALSE...')
 
         if hashtag_status.lower() == 'true':
             with open('./instaRes/hashtags.txt', mode='r', encoding='utf8') as hashtags_f:
@@ -99,6 +98,12 @@ class InstagramBot:
                     if self.likes % 3 == 0 or self.likes % 4 == 0:
                         self.post_comment()
 
+                    sleep(random.randint(1, 3))
+
+                    # Follow account
+                    if self.likes % 5 == 0 or self.likes % 6 == 0:
+                        self.follow_account()
+
                 else:
                     total_photos -= 1
                     continue
@@ -119,17 +124,16 @@ class InstagramBot:
 
     # Method for posting comments begin
     def post_comment(self):
-        driver = self.driver
         with open('./instaRes/config.json', mode='r') as cmnt_config:
             cmnt_config = json.load(cmnt_config)
             comment_status = cmnt_config['comment']
             if comment_status.lower() != 'true':
                 comment_status = 'false'
-                # print('Setting hashtag status to FALSE...')
 
         if comment_status.lower() == 'true':
             with open('./instaRes/comments.txt', mode='r', encoding='utf8') as comments_f:
                 comments = comments_f.read().splitlines()
+            driver = self.driver
             driver.find_element_by_class_name('Ypffh').click()
             comment_element = driver.find_element_by_class_name('Ypffh')
             sleep(1)
@@ -140,7 +144,26 @@ class InstagramBot:
             sleep(5)
 
         return
+
     # Method for posting comments end
+
+    # Method for account following begins
+    def follow_account(self):
+        with open('./instaRes/config.json', mode='r') as flw_config:
+            flw_config = json.load(flw_config)
+            follow_status = flw_config['comment']
+            if follow_status.lower() != 'true':
+                follow_status = 'false'
+
+        if follow_status.lower() == 'true':
+            driver = self.driver
+            follow_button = driver.find_element_by_xpath('//*[@id="react-root"]/section/main/div/div[1]/'
+                                                         'article/header/div[2]/div[1]/div[2]/button')
+            if follow_button.text == 'Follow':
+                follow_button.click()
+
+        return
+    # Method for account following end
 
 
 if __name__ == "__main__":
