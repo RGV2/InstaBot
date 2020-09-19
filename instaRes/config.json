@@ -3,5 +3,6 @@
   "password": "**************",
   "comment": "false",
   "hashtag": "true",
-  "follow": "true"
+  "follow": "true",
+  "likes_per_hashtag": "3"
 }

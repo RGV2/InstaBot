@@ -6,6 +6,7 @@ from time import sleep
 import random
 import sys
 import json
+import os
 
 
 def print_same_line(text):
@@ -22,12 +23,14 @@ def type_phrase(comment, field):
 
 
 class InstagramBot:
-    likes = 0
 
     def __init__(self, u_name, pwd):
         self.username = u_name
         self.password = pwd
         self.driver = webdriver.Chrome(ChromeDriverManager().install())
+        self.likes = 0
+        self.i_hashtag = 0
+        self.i_comment = 0
 
     def close_browser(self):
         self.driver.close()
@@ -54,14 +57,18 @@ class InstagramBot:
             hash_config = json.load(hash_config)
             hashtag_status = hash_config['hashtag']
 
-            if hashtag_status.lower() != 'true':
+            if hashtag_status.lower() == 'true':
+                hashtag_status = hashtag_status.lower()
+            else:
                 hashtag_status = 'false'
 
-        if hashtag_status.lower() == 'true':
+        if hashtag_status == 'true':
             with open('./instaRes/hashtags.txt', mode='r', encoding='utf8') as hashtags_f:
                 hashtags = hashtags_f.read().splitlines()
-            hashtag = random.choice(hashtags)
+                total_hashtags = len(hashtags)
+            hashtag = hashtags[self.i_hashtag % total_hashtags]
             driver.get('https://www.instagram.com/explore/tags/' + hashtag + '/')
+            self.i_hashtag += 1
         else:
             driver.get('https://www.instagram.com/explore/')
 
@@ -71,6 +78,16 @@ class InstagramBot:
             hrefs_in_view = [elem.get_attribute('href')
                              for elem in hrefs_in_view
                              if '/p/' in elem.get_attribute('href')]
+
+            with open('./instaRes/config.json', mode='r') as likes_per_hashtag_config:
+                likes_per_hashtag_config = json.load(likes_per_hashtag_config)
+                try:
+                    likes_per_hashtag = int(likes_per_hashtag_config['likes_per_hashtag'])
+                    if likes_per_hashtag < 1:
+                        likes_per_hashtag = 1
+                    hrefs_in_view = hrefs_in_view[:likes_per_hashtag]
+                except ValueError:
+                    sys.exit('Invalid config found for \'likes_per_hashtag\' in config.json. Please enter Integer only')
 
         except Exception as ex_fetch_url:
             print(ex_fetch_url)
@@ -119,32 +136,35 @@ class InstagramBot:
             except Exception as ex_like:
                 print(ex_like)
                 sleep(2)
-
     # Method for hitting like end
 
     # Method for posting comments begin
     def post_comment(self):
-        with open('./instaRes/config.json', mode='r') as cmnt_config:
-            cmnt_config = json.load(cmnt_config)
-            comment_status = cmnt_config['comment']
-            if comment_status.lower() != 'true':
+        with open('./instaRes/config.json', mode='r') as comment_config:
+            comment_config = json.load(comment_config)
+            comment_status = comment_config['comment']
+            if comment_status.lower() == 'true':
+                comment_status = 'true'
+            else:
                 comment_status = 'false'
 
-        if comment_status.lower() == 'true':
+        if comment_status == 'true':
             with open('./instaRes/comments.txt', mode='r', encoding='utf8') as comments_f:
                 comments = comments_f.read().splitlines()
+                total_comments = len(comments)
+            comment = comments[self.i_comment % total_comments]
             driver = self.driver
             driver.find_element_by_class_name('Ypffh').click()
             comment_element = driver.find_element_by_class_name('Ypffh')
             sleep(1)
             comment_element.clear()
-            type_phrase(random.choice(comments), comment_element)
+            type_phrase(comment, comment_element)
             sleep(3)
             driver.find_element_by_xpath('//button[contains(text(), "Post")]').click()
             sleep(5)
+            self.i_comment += 1
 
         return
-
     # Method for posting comments end
 
     # Method for account following begins
@@ -172,6 +192,9 @@ if __name__ == "__main__":
         config = json.load(config)
         username = config['username']
         password = config['password']
+
+        if os.path.getsize('./instaRes/hashtags.txt') == 0 or os.path.getsize('./instaRes/comments.txt') == 0:
+            sys.exit('Empty comment.txt or hashtag.txt file. Please try again... :)')
 
         if username == '' or password == '':
             sys.exit('Invalid username or password entered. Please try again... :)')
