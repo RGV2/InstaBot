@@ -169,13 +169,15 @@ class InstagramBot:
 
     # Method for account following begins
     def follow_account(self):
-        with open('./instaRes/config.json', mode='r') as flw_config:
-            flw_config = json.load(flw_config)
-            follow_status = flw_config['comment']
-            if follow_status.lower() != 'true':
+        with open('./instaRes/config.json', mode='r') as follow_config:
+            follow_config = json.load(follow_config)
+            follow_status = follow_config['follow']
+            if follow_status.lower() == 'true':
+                follow_status = 'true'
+            else:
                 follow_status = 'false'
 
-        if follow_status.lower() == 'true':
+        if follow_status == 'true':
             driver = self.driver
             follow_button = driver.find_element_by_xpath('//*[@id="react-root"]/section/main/div/div[1]/'
                                                          'article/header/div[2]/div[1]/div[2]/button')
