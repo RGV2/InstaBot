@@ -22,6 +22,17 @@ def type_phrase(comment, field):
         sleep(0.2)
 
 
+def shuffle_comments_hashtags():
+    with open('./instaRes/hashtags.txt') as hashtags, open('./instaRes/comments.txt') as comments:
+        hashtags_lines = hashtags.readlines()
+        comments_lines = comments.readlines()
+    random.shuffle(hashtags_lines)
+    random.shuffle(comments_lines)
+    with open('./instaRes/hashtags.txt', 'w') as hashtags, open('./instaRes/comments.txt', 'w') as comments:
+        hashtags.writelines(hashtags_lines)
+        comments.writelines(comments_lines)
+
+
 class InstagramBot:
 
     def __init__(self, u_name, pwd):
@@ -53,9 +64,9 @@ class InstagramBot:
         driver = self.driver
         hashtag = None
 
-        with open('./instaRes/config.json', mode='r') as hash_config:
-            hash_config = json.load(hash_config)
-            hashtag_status = hash_config['hashtag']
+        with open('./instaRes/config.json', mode='r') as hashtag_config:
+            hashtag_config = json.load(hashtag_config)
+            hashtag_status = hashtag_config['hashtag']
 
             if hashtag_status.lower() == 'true':
                 hashtag_status = hashtag_status.lower()
@@ -196,7 +207,9 @@ if __name__ == "__main__":
         password = config['password']
 
         if os.path.getsize('./instaRes/hashtags.txt') == 0 or os.path.getsize('./instaRes/comments.txt') == 0:
-            sys.exit('Empty comment.txt or hashtag.txt file. Please try again... :)')
+            sys.exit('Empty hashtag.txt or comment.txt file. Please try again... :)')
+        else:
+            shuffle_comments_hashtags()
 
         if username == '' or password == '':
             sys.exit('Invalid username or password entered. Please try again... :)')
