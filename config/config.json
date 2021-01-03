@@ -1,0 +1,12 @@
+{
+  "analyze_non_follower": "false",
+  "comment": "true",
+  "disable_image": "false",
+  "follow": "false",
+  "hashtag": "true",
+  "headless": "false",
+  "likes_per_hashtag": "15",
+  "password": "**************",
+  "unfollow": "false",
+  "username": "mushtaq.ashhar"
+}
